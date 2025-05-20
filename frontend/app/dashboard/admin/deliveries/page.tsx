@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +20,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Truck,
   Calendar,
@@ -32,10 +38,10 @@ import {
   FileText,
   X,
   DollarSign,
-} from "lucide-react"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Switch } from "@/components/ui/switch"
+} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 // Mock data for deliveries
 const mockDeliveries = [
@@ -78,8 +84,16 @@ const mockDeliveries = [
     isCritical: true,
     notes: "Customer is a priority account. Ensure timely delivery.",
     tasks: [
-      { id: "task1", description: "Check temperature of refrigerated items", isCompleted: false },
-      { id: "task2", description: "Get signature from store manager", isCompleted: false },
+      {
+        id: "task1",
+        description: "Check temperature of refrigerated items",
+        isCompleted: false,
+      },
+      {
+        id: "task2",
+        description: "Get signature from store manager",
+        isCompleted: false,
+      },
     ],
     paymentStatus: "PAID",
     paymentMethod: "CARD",
@@ -130,23 +144,63 @@ const mockDeliveries = [
     paymentAmount: 120.0,
     paymentUpdatedBy: "Sarah Driver",
   },
-]
+];
 
 // Mock data for drivers
 const mockDrivers = [
-  { id: "driver1", name: "John Driver", status: "active", currentDeliveries: 1 },
-  { id: "driver2", name: "Sarah Driver", status: "active", currentDeliveries: 0 },
-  { id: "driver3", name: "Mike Driver", status: "inactive", currentDeliveries: 0 },
-  { id: "driver4", name: "Lisa Driver", status: "active", currentDeliveries: 2 },
-]
+  {
+    id: "driver1",
+    name: "John Driver",
+    status: "active",
+    currentDeliveries: 1,
+  },
+  {
+    id: "driver2",
+    name: "Sarah Driver",
+    status: "active",
+    currentDeliveries: 0,
+  },
+  {
+    id: "driver3",
+    name: "Mike Driver",
+    status: "inactive",
+    currentDeliveries: 0,
+  },
+  {
+    id: "driver4",
+    name: "Lisa Driver",
+    status: "active",
+    currentDeliveries: 2,
+  },
+];
 
 // Mock data for delivery routes
 const mockRoutes = [
-  { id: "route1", name: "North City Route", stops: 5, estimatedTime: "2 hours" },
-  { id: "route2", name: "South City Route", stops: 4, estimatedTime: "1.5 hours" },
-  { id: "route3", name: "East County Route", stops: 6, estimatedTime: "2.5 hours" },
-  { id: "route4", name: "West County Route", stops: 3, estimatedTime: "1 hour" },
-]
+  {
+    id: "route1",
+    name: "North City Route",
+    stops: 5,
+    estimatedTime: "2 hours",
+  },
+  {
+    id: "route2",
+    name: "South City Route",
+    stops: 4,
+    estimatedTime: "1.5 hours",
+  },
+  {
+    id: "route3",
+    name: "East County Route",
+    stops: 6,
+    estimatedTime: "2.5 hours",
+  },
+  {
+    id: "route4",
+    name: "West County Route",
+    stops: 3,
+    estimatedTime: "1 hour",
+  },
+];
 
 // Mock data for orders
 const mockOrders = [
@@ -186,7 +240,7 @@ const mockOrders = [
     from: "Central Warehouse",
     to: "Organic Dairy Store",
   },
-]
+];
 
 // Mock data for supply requests
 const mockSupplyRequests = [
@@ -235,21 +289,70 @@ const mockSupplyRequests = [
     to: "Central Warehouse",
     items: [{ name: "Artisan Cheese", quantity: "30 kg" }],
   },
-]
+];
+
+type DeliveryItem = { id?: string; name: string; quantity: string };
+type DeliveryTask = { id: string; description: string; isCompleted: boolean };
+type AssignedDriver = { id: string; name: string } | null;
+
+type Delivery = {
+  id: string;
+  type: string;
+  sourceType?: string;
+  from: string;
+  to: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  priority: string;
+  isCritical: boolean;
+  notes: string;
+  items: DeliveryItem[];
+  tasks: DeliveryTask[];
+  orderId?: string;
+  supplyRequestId?: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentAmount: number;
+  paymentUpdatedBy: string;
+  assignedDriver: AssignedDriver;
+  status: string;
+  route?: any;
+};
 
 export default function DeliveriesPage() {
-  const [deliveries, setDeliveries] = useState(mockDeliveries)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false)
-  const [isRouteDialogOpen, setIsRouteDialogOpen] = useState(false)
-  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false)
-  const [selectedDelivery, setSelectedDelivery] = useState<any>(null)
-  const [selectedDriver, setSelectedDriver] = useState<string>("")
-  const [selectedRoute, setSelectedRoute] = useState<string>("")
-  const [newTask, setNewTask] = useState("")
-  const [deliveryNotes, setDeliveryNotes] = useState("")
-  const [newDelivery, setNewDelivery] = useState({
+  const [deliveries, setDeliveries] = useState<Delivery[]>(mockDeliveries);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [isRouteDialogOpen, setIsRouteDialogOpen] = useState(false);
+  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(
+    null
+  );
+  const [selectedDriver, setSelectedDriver] = useState<string>("");
+  const [selectedRoute, setSelectedRoute] = useState<string>("");
+  const [newTask, setNewTask] = useState("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
+
+  const [newDelivery, setNewDelivery] = useState<{
+    type: string;
+    sourceType: string;
+    from: string;
+    to: string;
+    scheduledDate: string;
+    scheduledTime: string;
+    priority: string;
+    isCritical: boolean;
+    notes: string;
+    items: DeliveryItem[];
+    tasks: DeliveryTask[];
+    orderId: string;
+    supplyRequestId: string;
+    paymentStatus: string;
+    paymentMethod: string;
+    paymentAmount: number;
+    paymentUpdatedBy: string;
+  }>({
     type: "delivery",
     sourceType: "order", // can be "order" or "supply"
     from: "",
@@ -267,13 +370,13 @@ export default function DeliveriesPage() {
     paymentMethod: "",
     paymentAmount: 0,
     paymentUpdatedBy: "",
-  })
+  });
 
   useEffect(() => {
     if (selectedDelivery) {
-      setDeliveryNotes(selectedDelivery.notes || "")
+      setDeliveryNotes(selectedDelivery.notes || "");
     }
-  }, [selectedDelivery])
+  }, [selectedDelivery]);
 
   const handleOrderSelect = (orderId: string) => {
     if (orderId === "none") {
@@ -284,12 +387,12 @@ export default function DeliveriesPage() {
         from: "",
         to: "",
         items: [],
-      })
-      return
+      });
+      return;
     }
 
     // Find the selected order
-    const selectedOrder = mockOrders.find((order) => order.id === orderId)
+    const selectedOrder = mockOrders.find((order) => order.id === orderId);
     if (selectedOrder) {
       // Populate the form with order data
       setNewDelivery({
@@ -297,11 +400,14 @@ export default function DeliveriesPage() {
         orderId,
         from: selectedOrder.from,
         to: selectedOrder.to,
-        items: selectedOrder.items.map((item) => ({ name: item.name, quantity: item.quantity })),
+        items: selectedOrder.items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+        })),
         paymentAmount: selectedOrder.total,
-      })
+      });
     }
-  }
+  };
 
   const handleSupplyRequestSelect = (requestId: string) => {
     if (requestId === "none") {
@@ -313,12 +419,14 @@ export default function DeliveriesPage() {
         to: "",
         items: [],
         notes: "",
-      })
-      return
+      });
+      return;
     }
 
     // Find the selected supply request
-    const selectedRequest = mockSupplyRequests.find((request) => request.id === requestId)
+    const selectedRequest = mockSupplyRequests.find(
+      (request) => request.id === requestId
+    );
     if (selectedRequest) {
       // Populate the form with supply request data
       setNewDelivery({
@@ -326,25 +434,43 @@ export default function DeliveriesPage() {
         supplyRequestId: requestId,
         from: selectedRequest.from,
         to: selectedRequest.to,
-        items: selectedRequest.items.map((item) => ({ name: item.name, quantity: item.quantity })),
+        items: selectedRequest.items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+        })),
         notes: selectedRequest.notes,
-        priority: selectedRequest.urgency === "HIGH" ? "high" : selectedRequest.urgency === "MEDIUM" ? "normal" : "low",
-      })
+        priority:
+          selectedRequest.urgency === "HIGH"
+            ? "high"
+            : selectedRequest.urgency === "MEDIUM"
+            ? "normal"
+            : "low",
+      });
     }
-  }
+  };
 
   const handleCreateDelivery = () => {
     // Validate form based on source type
     if (newDelivery.sourceType === "order") {
-      if (!newDelivery.orderId || !newDelivery.scheduledDate || !newDelivery.scheduledTime) {
-        toast.error("Please select an order and fill in all required fields")
-        return
+      if (
+        !newDelivery.orderId ||
+        !newDelivery.scheduledDate ||
+        !newDelivery.scheduledTime
+      ) {
+        toast.error("Please select an order and fill in all required fields");
+        return;
       }
     } else {
       // supply pickup
-      if (!newDelivery.supplyRequestId || !newDelivery.scheduledDate || !newDelivery.scheduledTime) {
-        toast.error("Please select a supply request and fill in all required fields")
-        return
+      if (
+        !newDelivery.supplyRequestId ||
+        !newDelivery.scheduledDate ||
+        !newDelivery.scheduledTime
+      ) {
+        toast.error(
+          "Please select a supply request and fill in all required fields"
+        );
+        return;
       }
     }
 
@@ -359,11 +485,15 @@ export default function DeliveriesPage() {
         name: item.name,
         quantity: item.quantity,
       })),
-    }
+    };
 
-    setDeliveries([delivery, ...deliveries])
-    setIsCreateDialogOpen(false)
-    toast.success(`${newDelivery.type === "delivery" ? "Delivery" : "Pickup"} created successfully`)
+    setDeliveries([delivery, ...deliveries]);
+    setIsCreateDialogOpen(false);
+    toast.success(
+      `${
+        newDelivery.type === "delivery" ? "Delivery" : "Pickup"
+      } created successfully`
+    );
 
     // Reset form
     setNewDelivery({
@@ -384,19 +514,19 @@ export default function DeliveriesPage() {
       paymentMethod: "",
       paymentAmount: 0,
       paymentUpdatedBy: "",
-    })
-  }
+    });
+  };
 
   const handleAssignDriver = () => {
     if (!selectedDriver || !selectedDelivery) {
-      toast.error("Please select a driver")
-      return
+      toast.error("Please select a driver");
+      return;
     }
 
-    const driver = mockDrivers.find((d) => d.id === selectedDriver)
+    const driver = mockDrivers.find((d) => d.id === selectedDriver);
     if (!driver) {
-      toast.error("Selected driver not found")
-      return
+      toast.error("Selected driver not found");
+      return;
     }
 
     setDeliveries(
@@ -407,36 +537,42 @@ export default function DeliveriesPage() {
               assignedDriver: { id: selectedDriver, name: driver.name },
               status: "in_progress",
             }
-          : delivery,
-      ),
-    )
+          : delivery
+      )
+    );
 
-    setIsAssignDialogOpen(false)
-    toast.success(`Driver assigned to ${selectedDelivery.type} successfully`)
+    setIsAssignDialogOpen(false);
+    toast.success(`Driver assigned to ${selectedDelivery.type} successfully`);
 
     // Simulate notification to driver
-    toast.info(`Notification sent to ${driver.name} about new assignment`)
+    toast.info(`Notification sent to ${driver.name} about new assignment`);
 
-    setSelectedDriver("")
-    setSelectedRoute("")
-  }
+    setSelectedDriver("");
+    setSelectedRoute("");
+  };
 
   const handleItemChange = (index: number, field: string, value: string) => {
     setNewDelivery({
       ...newDelivery,
-      items: newDelivery.items.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
-    })
-  }
+      items: newDelivery.items.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      ),
+    });
+  };
 
   const handleMarkAsCompleted = (id: string) => {
-    setDeliveries(deliveries.map((delivery) => (delivery.id === id ? { ...delivery, status: "completed" } : delivery)))
-    toast.success("Marked as completed")
-  }
+    setDeliveries(
+      deliveries.map((delivery) =>
+        delivery.id === id ? { ...delivery, status: "completed" } : delivery
+      )
+    );
+    toast.success("Marked as completed");
+  };
 
   const handleAddTask = () => {
     if (!newTask.trim() || !selectedDelivery) {
-      toast.error("Task description cannot be empty")
-      return
+      toast.error("Task description cannot be empty");
+      return;
     }
 
     const updatedDelivery = {
@@ -449,29 +585,37 @@ export default function DeliveriesPage() {
           isCompleted: false,
         },
       ],
-    }
+    };
 
-    setDeliveries(deliveries.map((delivery) => (delivery.id === selectedDelivery.id ? updatedDelivery : delivery)))
+    setDeliveries(
+      deliveries.map((delivery) =>
+        delivery.id === selectedDelivery.id ? updatedDelivery : delivery
+      )
+    );
 
-    setNewTask("")
-    toast.success("Task added successfully")
-  }
+    setNewTask("");
+    toast.success("Task added successfully");
+  };
 
   const handleRemoveTask = (taskId: string) => {
-    if (!selectedDelivery) return
+    if (!selectedDelivery) return;
 
     const updatedDelivery = {
       ...selectedDelivery,
       tasks: selectedDelivery.tasks.filter((task: any) => task.id !== taskId),
-    }
+    };
 
-    setDeliveries(deliveries.map((delivery) => (delivery.id === selectedDelivery.id ? updatedDelivery : delivery)))
+    setDeliveries(
+      deliveries.map((delivery) =>
+        delivery.id === selectedDelivery.id ? updatedDelivery : delivery
+      )
+    );
 
-    toast.success("Task removed")
-  }
+    toast.success("Task removed");
+  };
 
   const handleSaveNotes = () => {
-    if (!selectedDelivery) return
+    if (!selectedDelivery) return;
 
     setDeliveries(
       deliveries.map((delivery) =>
@@ -480,13 +624,13 @@ export default function DeliveriesPage() {
               ...delivery,
               notes: deliveryNotes,
             }
-          : delivery,
-      ),
-    )
+          : delivery
+      )
+    );
 
-    setIsNotesDialogOpen(false)
-    toast.success("Notes updated successfully")
-  }
+    setIsNotesDialogOpen(false);
+    toast.success("Notes updated successfully");
+  };
 
   const handleToggleCritical = (id: string, isCritical: boolean) => {
     setDeliveries(
@@ -497,24 +641,32 @@ export default function DeliveriesPage() {
               isCritical,
               priority: isCritical ? "high" : delivery.priority,
             }
-          : delivery,
-      ),
-    )
+          : delivery
+      )
+    );
 
-    toast.success(`Delivery marked as ${isCritical ? "critical" : "non-critical"}`)
-  }
+    toast.success(
+      `Delivery marked as ${isCritical ? "critical" : "non-critical"}`
+    );
+  };
 
-  const pendingDeliveries = deliveries.filter((d) => d.status === "pending")
-  const inProgressDeliveries = deliveries.filter((d) => d.status === "in_progress")
-  const completedDeliveries = deliveries.filter((d) => d.status === "completed")
-  const criticalDeliveries = deliveries.filter((d) => d.isCritical)
+  const pendingDeliveries = deliveries.filter((d) => d.status === "pending");
+  const inProgressDeliveries = deliveries.filter(
+    (d) => d.status === "in_progress"
+  );
+  const completedDeliveries = deliveries.filter(
+    (d) => d.status === "completed"
+  );
+  const criticalDeliveries = deliveries.filter((d) => d.isCritical);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Deliveries Management</h1>
-          <p className="text-muted-foreground">Manage pickups and deliveries across the supply chain</p>
+          <p className="text-muted-foreground">
+            Manage pickups and deliveries across the supply chain
+          </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -526,7 +678,9 @@ export default function DeliveriesPage() {
           <DialogContent className="sm:max-w-[700px]">
             <DialogHeader>
               <DialogTitle>Create New Delivery or Pickup</DialogTitle>
-              <DialogDescription>Fill in the details to create a new delivery or pickup request.</DialogDescription>
+              <DialogDescription>
+                Fill in the details to create a new delivery or pickup request.
+              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
@@ -544,7 +698,7 @@ export default function DeliveriesPage() {
                       to: "",
                       items: [],
                       notes: "",
-                    })
+                    });
                   }}
                 >
                   <SelectTrigger id="sourceType">
@@ -561,7 +715,10 @@ export default function DeliveriesPage() {
               {newDelivery.sourceType === "order" ? (
                 <div className="space-y-2">
                   <Label htmlFor="order">Select Order *</Label>
-                  <Select value={newDelivery.orderId || "none"} onValueChange={handleOrderSelect}>
+                  <Select
+                    value={newDelivery.orderId || "none"}
+                    onValueChange={handleOrderSelect}
+                  >
                     <SelectTrigger id="order">
                       <SelectValue placeholder="Select an order" />
                     </SelectTrigger>
@@ -578,17 +735,23 @@ export default function DeliveriesPage() {
               ) : (
                 <div className="space-y-2">
                   <Label htmlFor="supplyRequest">Select Supply Request *</Label>
-                  <Select value={newDelivery.supplyRequestId || "none"} onValueChange={handleSupplyRequestSelect}>
+                  <Select
+                    value={newDelivery.supplyRequestId || "none"}
+                    onValueChange={handleSupplyRequestSelect}
+                  >
                     <SelectTrigger id="supplyRequest">
                       <SelectValue placeholder="Select a supply request" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Select a supply request</SelectItem>
+                      <SelectItem value="none">
+                        Select a supply request
+                      </SelectItem>
                       {mockSupplyRequests
                         .filter((request) => request.status === "approved")
                         .map((request) => (
                           <SelectItem key={request.id} value={request.id}>
-                            {request.supplier} - {request.product} ({request.deliveryDate})
+                            {request.supplier} - {request.product} (
+                            {request.deliveryDate})
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -600,7 +763,8 @@ export default function DeliveriesPage() {
               {newDelivery.sourceType === "order" && newDelivery.orderId && (
                 <div className="rounded-md border p-3 bg-muted/50">
                   <div className="text-sm mb-2">
-                    <span className="font-medium">Order Details:</span> From {newDelivery.from} to {newDelivery.to}
+                    <span className="font-medium">Order Details:</span> From{" "}
+                    {newDelivery.from} to {newDelivery.to}
                   </div>
                   <div className="text-sm mb-2">
                     <span className="font-medium">Items:</span>
@@ -615,36 +779,42 @@ export default function DeliveriesPage() {
                 </div>
               )}
 
-              {newDelivery.sourceType === "supply" && newDelivery.supplyRequestId && (
-                <div className="rounded-md border p-3 bg-muted/50">
-                  <div className="text-sm mb-2">
-                    <span className="font-medium">Supply Request Details:</span> From {newDelivery.from} to{" "}
-                    {newDelivery.to}
-                  </div>
-                  <div className="text-sm mb-2">
-                    <span className="font-medium">Items:</span>
-                    <div className="mt-1 pl-2 border-l-2 border-muted-foreground/20">
-                      {newDelivery.items.map((item, index) => (
-                        <div key={index}>
-                          • {item.name} - {item.quantity}
-                        </div>
-                      ))}
+              {newDelivery.sourceType === "supply" &&
+                newDelivery.supplyRequestId && (
+                  <div className="rounded-md border p-3 bg-muted/50">
+                    <div className="text-sm mb-2">
+                      <span className="font-medium">
+                        Supply Request Details:
+                      </span>{" "}
+                      From {newDelivery.from} to {newDelivery.to}
                     </div>
-                  </div>
-                  {newDelivery.notes && (
-                    <div className="text-sm">
-                      <span className="font-medium">Notes:</span> {newDelivery.notes}
+                    <div className="text-sm mb-2">
+                      <span className="font-medium">Items:</span>
+                      <div className="mt-1 pl-2 border-l-2 border-muted-foreground/20">
+                        {newDelivery.items.map((item, index) => (
+                          <div key={index}>
+                            • {item.name} - {item.quantity}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
+                    {newDelivery.notes && (
+                      <div className="text-sm">
+                        <span className="font-medium">Notes:</span>{" "}
+                        {newDelivery.notes}
+                      </div>
+                    )}
+                  </div>
+                )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="type">Type</Label>
                   <Select
                     value={newDelivery.type}
-                    onValueChange={(value) => setNewDelivery({ ...newDelivery, type: value })}
+                    onValueChange={(value) =>
+                      setNewDelivery({ ...newDelivery, type: value })
+                    }
                   >
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Select type" />
@@ -659,7 +829,9 @@ export default function DeliveriesPage() {
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={newDelivery.priority}
-                    onValueChange={(value) => setNewDelivery({ ...newDelivery, priority: value })}
+                    onValueChange={(value) =>
+                      setNewDelivery({ ...newDelivery, priority: value })
+                    }
                   >
                     <SelectTrigger id="priority">
                       <SelectValue placeholder="Select priority" />
@@ -700,7 +872,12 @@ export default function DeliveriesPage() {
                     id="date"
                     type="date"
                     value={newDelivery.scheduledDate}
-                    onChange={(e) => setNewDelivery({ ...newDelivery, scheduledDate: e.target.value })}
+                    onChange={(e) =>
+                      setNewDelivery({
+                        ...newDelivery,
+                        scheduledDate: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -709,7 +886,12 @@ export default function DeliveriesPage() {
                     id="time"
                     type="time"
                     value={newDelivery.scheduledTime}
-                    onChange={(e) => setNewDelivery({ ...newDelivery, scheduledTime: e.target.value })}
+                    onChange={(e) =>
+                      setNewDelivery({
+                        ...newDelivery,
+                        scheduledTime: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -719,14 +901,19 @@ export default function DeliveriesPage() {
                 <Textarea
                   id="notes"
                   value={newDelivery.notes}
-                  onChange={(e) => setNewDelivery({ ...newDelivery, notes: e.target.value })}
+                  onChange={(e) =>
+                    setNewDelivery({ ...newDelivery, notes: e.target.value })
+                  }
                   placeholder="Add any special instructions or notes for this delivery"
                   rows={2}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleCreateDelivery}>Create</Button>
@@ -743,7 +930,9 @@ export default function DeliveriesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingDeliveries.length}</div>
-            <p className="text-xs text-muted-foreground">Awaiting driver assignment</p>
+            <p className="text-xs text-muted-foreground">
+              Awaiting driver assignment
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -752,8 +941,12 @@ export default function DeliveriesPage() {
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressDeliveries.length}</div>
-            <p className="text-xs text-muted-foreground">Currently being handled</p>
+            <div className="text-2xl font-bold">
+              {inProgressDeliveries.length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Currently being handled
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -762,8 +955,12 @@ export default function DeliveriesPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedDeliveries.length}</div>
-            <p className="text-xs text-muted-foreground">Successfully delivered</p>
+            <div className="text-2xl font-bold">
+              {completedDeliveries.length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Successfully delivered
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -772,8 +969,12 @@ export default function DeliveriesPage() {
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{criticalDeliveries.length}</div>
-            <p className="text-xs text-muted-foreground">High priority deliveries</p>
+            <div className="text-2xl font-bold text-red-500">
+              {criticalDeliveries.length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              High priority deliveries
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -795,20 +996,22 @@ export default function DeliveriesPage() {
               key={delivery.id}
               delivery={delivery}
               onAssign={() => {
-                setSelectedDelivery(delivery)
-                setIsAssignDialogOpen(true)
+                setSelectedDelivery(delivery);
+                setIsAssignDialogOpen(true);
               }}
               onComplete={() => handleMarkAsCompleted(delivery.id)}
               onAddTasks={() => {
-                setSelectedDelivery(delivery)
-                setIsTaskDialogOpen(true)
+                setSelectedDelivery(delivery);
+                setIsTaskDialogOpen(true);
               }}
               onEditNotes={() => {
-                setSelectedDelivery(delivery)
-                setDeliveryNotes(delivery.notes || "")
-                setIsNotesDialogOpen(true)
+                setSelectedDelivery(delivery);
+                setDeliveryNotes(delivery.notes || "");
+                setIsNotesDialogOpen(true);
               }}
-              onToggleCritical={(isCritical) => handleToggleCritical(delivery.id, isCritical)}
+              onToggleCritical={(isCritical) =>
+                handleToggleCritical(delivery.id, isCritical)
+              }
             />
           ))}
         </TabsContent>
@@ -820,20 +1023,22 @@ export default function DeliveriesPage() {
                 key={delivery.id}
                 delivery={delivery}
                 onAssign={() => {
-                  setSelectedDelivery(delivery)
-                  setIsAssignDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsAssignDialogOpen(true);
                 }}
                 onComplete={() => handleMarkAsCompleted(delivery.id)}
                 onAddTasks={() => {
-                  setSelectedDelivery(delivery)
-                  setIsTaskDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsTaskDialogOpen(true);
                 }}
                 onEditNotes={() => {
-                  setSelectedDelivery(delivery)
-                  setDeliveryNotes(delivery.notes || "")
-                  setIsNotesDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setDeliveryNotes(delivery.notes || "");
+                  setIsNotesDialogOpen(true);
                 }}
-                onToggleCritical={(isCritical) => handleToggleCritical(delivery.id, isCritical)}
+                onToggleCritical={(isCritical) =>
+                  handleToggleCritical(delivery.id, isCritical)
+                }
               />
             ))
           ) : (
@@ -848,20 +1053,22 @@ export default function DeliveriesPage() {
                 key={delivery.id}
                 delivery={delivery}
                 onAssign={() => {
-                  setSelectedDelivery(delivery)
-                  setIsAssignDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsAssignDialogOpen(true);
                 }}
                 onComplete={() => handleMarkAsCompleted(delivery.id)}
                 onAddTasks={() => {
-                  setSelectedDelivery(delivery)
-                  setIsTaskDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsTaskDialogOpen(true);
                 }}
                 onEditNotes={() => {
-                  setSelectedDelivery(delivery)
-                  setDeliveryNotes(delivery.notes || "")
-                  setIsNotesDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setDeliveryNotes(delivery.notes || "");
+                  setIsNotesDialogOpen(true);
                 }}
-                onToggleCritical={(isCritical) => handleToggleCritical(delivery.id, isCritical)}
+                onToggleCritical={(isCritical) =>
+                  handleToggleCritical(delivery.id, isCritical)
+                }
               />
             ))
           ) : (
@@ -876,20 +1083,22 @@ export default function DeliveriesPage() {
                 key={delivery.id}
                 delivery={delivery}
                 onAssign={() => {
-                  setSelectedDelivery(delivery)
-                  setIsAssignDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsAssignDialogOpen(true);
                 }}
                 onComplete={() => handleMarkAsCompleted(delivery.id)}
                 onAddTasks={() => {
-                  setSelectedDelivery(delivery)
-                  setIsTaskDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsTaskDialogOpen(true);
                 }}
                 onEditNotes={() => {
-                  setSelectedDelivery(delivery)
-                  setDeliveryNotes(delivery.notes || "")
-                  setIsNotesDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setDeliveryNotes(delivery.notes || "");
+                  setIsNotesDialogOpen(true);
                 }}
-                onToggleCritical={(isCritical) => handleToggleCritical(delivery.id, isCritical)}
+                onToggleCritical={(isCritical) =>
+                  handleToggleCritical(delivery.id, isCritical)
+                }
               />
             ))
           ) : (
@@ -904,20 +1113,22 @@ export default function DeliveriesPage() {
                 key={delivery.id}
                 delivery={delivery}
                 onAssign={() => {
-                  setSelectedDelivery(delivery)
-                  setIsAssignDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsAssignDialogOpen(true);
                 }}
                 onComplete={() => handleMarkAsCompleted(delivery.id)}
                 onAddTasks={() => {
-                  setSelectedDelivery(delivery)
-                  setIsTaskDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setIsTaskDialogOpen(true);
                 }}
                 onEditNotes={() => {
-                  setSelectedDelivery(delivery)
-                  setDeliveryNotes(delivery.notes || "")
-                  setIsNotesDialogOpen(true)
+                  setSelectedDelivery(delivery);
+                  setDeliveryNotes(delivery.notes || "");
+                  setIsNotesDialogOpen(true);
                 }}
-                onToggleCritical={(isCritical) => handleToggleCritical(delivery.id, isCritical)}
+                onToggleCritical={(isCritical) =>
+                  handleToggleCritical(delivery.id, isCritical)
+                }
               />
             ))
           ) : (
@@ -931,26 +1142,37 @@ export default function DeliveriesPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Assign Driver</DialogTitle>
-            <DialogDescription>Select a driver for this {selectedDelivery?.type}.</DialogDescription>
+            <DialogDescription>
+              Select a driver for this {selectedDelivery?.type}.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="mb-4 rounded-lg border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium capitalize">{selectedDelivery?.type}</p>
+                  <p className="font-medium capitalize">
+                    {selectedDelivery?.type}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     From: {selectedDelivery?.from} • To: {selectedDelivery?.to}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Badge
-                    variant={selectedDelivery?.priority === "high" ? "destructive" : "outline"}
+                    variant={
+                      selectedDelivery?.priority === "high"
+                        ? "destructive"
+                        : "outline"
+                    }
                     className="capitalize"
                   >
                     {selectedDelivery?.priority} priority
                   </Badge>
                   {selectedDelivery?.isCritical && (
-                    <Badge variant="destructive" className="flex items-center gap-1">
+                    <Badge
+                      variant="destructive"
+                      className="flex items-center gap-1"
+                    >
                       <AlertTriangle className="h-3 w-3" /> Critical
                     </Badge>
                   )}
@@ -971,7 +1193,10 @@ export default function DeliveriesPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="driver">Select Driver</Label>
-                <Select value={selectedDriver} onValueChange={setSelectedDriver}>
+                <Select
+                  value={selectedDriver}
+                  onValueChange={setSelectedDriver}
+                >
                   <SelectTrigger id="driver">
                     <SelectValue placeholder="Choose a driver" />
                   </SelectTrigger>
@@ -980,7 +1205,8 @@ export default function DeliveriesPage() {
                       .filter((driver) => driver.status === "active")
                       .map((driver) => (
                         <SelectItem key={driver.id} value={driver.id}>
-                          {driver.name} ({driver.currentDeliveries} active deliveries)
+                          {driver.name} ({driver.currentDeliveries} active
+                          deliveries)
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -989,7 +1215,10 @@ export default function DeliveriesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsAssignDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleAssignDriver}>Assign Driver</Button>
@@ -1002,7 +1231,9 @@ export default function DeliveriesPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Manage Tasks</DialogTitle>
-            <DialogDescription>Add or remove tasks for this {selectedDelivery?.type}.</DialogDescription>
+            <DialogDescription>
+              Add or remove tasks for this {selectedDelivery?.type}.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="mb-4 rounded-lg border p-4">
@@ -1010,7 +1241,9 @@ export default function DeliveriesPage() {
                 {selectedDelivery?.type} to {selectedDelivery?.to}
               </p>
               {selectedDelivery?.assignedDriver && (
-                <p className="text-sm text-muted-foreground">Assigned to: {selectedDelivery.assignedDriver.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Assigned to: {selectedDelivery.assignedDriver.name}
+                </p>
               )}
             </div>
 
@@ -1031,15 +1264,26 @@ export default function DeliveriesPage() {
 
               <div className="space-y-2">
                 <Label>Current Tasks</Label>
-                {selectedDelivery?.tasks?.length > 0 ? (
+                {(selectedDelivery?.tasks ?? []).length > 0 ? (
                   <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                    {selectedDelivery.tasks.map((task: any) => (
-                      <div key={task.id} className="flex items-center justify-between rounded-md border p-3">
+                    {(selectedDelivery?.tasks ?? []).map((task: any) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center justify-between rounded-md border p-3"
+                      >
                         <div className="flex items-center gap-2">
-                          <Checkbox id={`task-${task.id}`} checked={task.isCompleted} disabled />
+                          <Checkbox
+                            id={`task-${task.id}`}
+                            checked={task.isCompleted}
+                            disabled
+                          />
                           <label
                             htmlFor={`task-${task.id}`}
-                            className={`text-sm ${task.isCompleted ? "line-through text-muted-foreground" : ""}`}
+                            className={`text-sm ${
+                              task.isCompleted
+                                ? "line-through text-muted-foreground"
+                                : ""
+                            }`}
                           >
                             {task.description}
                           </label>
@@ -1057,7 +1301,9 @@ export default function DeliveriesPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-muted-foreground">No tasks added yet</div>
+                  <div className="text-center py-4 text-muted-foreground">
+                    No tasks added yet
+                  </div>
                 )}
               </div>
             </div>
@@ -1073,7 +1319,10 @@ export default function DeliveriesPage() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Delivery Notes</DialogTitle>
-            <DialogDescription>Add special instructions or notes for this {selectedDelivery?.type}.</DialogDescription>
+            <DialogDescription>
+              Add special instructions or notes for this{" "}
+              {selectedDelivery?.type}.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-2">
@@ -1088,7 +1337,10 @@ export default function DeliveriesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNotesDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsNotesDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleSaveNotes}>Save Notes</Button>
@@ -1096,7 +1348,7 @@ export default function DeliveriesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
 
 // Helper component for delivery cards
@@ -1108,20 +1360,27 @@ function DeliveryCard({
   onEditNotes,
   onToggleCritical,
 }: {
-  delivery: any
-  onAssign: () => void
-  onComplete: () => void
-  onAddTasks: () => void
-  onEditNotes: () => void
-  onToggleCritical: (isCritical: boolean) => void
+  delivery: any;
+  onAssign: () => void;
+  onComplete: () => void;
+  onAddTasks: () => void;
+  onEditNotes: () => void;
+  onToggleCritical: (isCritical: boolean) => void;
 }) {
   return (
-    <Card className={delivery.isCritical ? "border-red-300 dark:border-red-700" : ""}>
+    <Card
+      className={
+        delivery.isCritical ? "border-red-300 dark:border-red-700" : ""
+      }
+    >
       <CardContent className="p-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Badge variant={delivery.type === "delivery" ? "default" : "secondary"} className="capitalize">
+              <Badge
+                variant={delivery.type === "delivery" ? "default" : "secondary"}
+                className="capitalize"
+              >
                 {delivery.type}
               </Badge>
               <Badge
@@ -1129,23 +1388,34 @@ function DeliveryCard({
                   delivery.status === "pending"
                     ? "outline"
                     : delivery.status === "in_progress"
-                      ? "secondary"
-                      : "success"
+                    ? "secondary"
+                    : "default"
                 }
                 className="capitalize"
               >
                 {delivery.status.replace("_", " ")}
               </Badge>
-              <Badge variant={delivery.priority === "high" ? "destructive" : "outline"} className="capitalize">
+              <Badge
+                variant={
+                  delivery.priority === "high" ? "destructive" : "outline"
+                }
+                className="capitalize"
+              >
                 {delivery.priority} priority
               </Badge>
               {delivery.isCritical && (
-                <Badge variant="destructive" className="flex items-center gap-1">
+                <Badge
+                  variant="destructive"
+                  className="flex items-center gap-1"
+                >
                   <AlertTriangle className="h-3 w-3" /> Critical
                 </Badge>
               )}
               {delivery.route && (
-                <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200"
+                >
                   <Route className="h-3 w-3" /> {delivery.route.name}
                 </Badge>
               )}
@@ -1180,7 +1450,10 @@ function DeliveryCard({
               <p className="text-sm font-medium mb-1">Items</p>
               <div className="space-y-1">
                 {delivery.items.map((item: any) => (
-                  <div key={item.id} className="flex items-center gap-2 text-sm">
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <Package className="h-3 w-3 text-muted-foreground" />
                     <span>
                       {item.name} - {item.quantity}
@@ -1193,7 +1466,8 @@ function DeliveryCard({
             {delivery.paymentStatus && (
               <div className="mt-4">
                 <p className="text-sm font-medium mb-1 flex items-center gap-1">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" /> Payment
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />{" "}
+                  Payment
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm">
@@ -1201,17 +1475,19 @@ function DeliveryCard({
                     <Badge
                       variant={
                         delivery.paymentStatus === "PAID"
-                          ? "success"
+                          ? "default"
                           : delivery.paymentStatus === "PENDING"
-                            ? "outline"
-                            : "destructive"
+                          ? "outline"
+                          : "destructive"
                       }
                     >
                       {delivery.paymentStatus}
                     </Badge>
                   </span>
                   {delivery.paymentMethod && (
-                    <span className="text-sm text-muted-foreground">Method: {delivery.paymentMethod}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Method: {delivery.paymentMethod}
+                    </span>
                   )}
                   {delivery.paymentAmount > 0 && (
                     <span className="text-sm text-muted-foreground">
@@ -1219,7 +1495,9 @@ function DeliveryCard({
                     </span>
                   )}
                   {delivery.paymentUpdatedBy && (
-                    <span className="text-sm text-muted-foreground">Updated by: {delivery.paymentUpdatedBy}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Updated by: {delivery.paymentUpdatedBy}
+                    </span>
                   )}
                 </div>
               </div>
@@ -1229,11 +1507,22 @@ function DeliveryCard({
                 <p className="text-sm font-medium mb-1">Tasks</p>
                 <div className="space-y-1">
                   {delivery.tasks.map((task: any) => (
-                    <div key={task.id} className="flex items-center gap-2 text-sm">
+                    <div
+                      key={task.id}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <div
-                        className={`h-3 w-3 rounded-full ${task.isCompleted ? "bg-green-500" : "bg-gray-300"}`}
+                        className={`h-3 w-3 rounded-full ${
+                          task.isCompleted ? "bg-green-500" : "bg-gray-300"
+                        }`}
                       ></div>
-                      <span className={task.isCompleted ? "line-through text-muted-foreground" : ""}>
+                      <span
+                        className={
+                          task.isCompleted
+                            ? "line-through text-muted-foreground"
+                            : ""
+                        }
+                      >
                         {task.description}
                       </span>
                     </div>
@@ -1246,7 +1535,9 @@ function DeliveryCard({
                 <p className="text-sm font-medium mb-1 flex items-center gap-1">
                   <FileText className="h-3 w-3" /> Notes
                 </p>
-                <p className="text-sm text-muted-foreground">{delivery.notes}</p>
+                <p className="text-sm text-muted-foreground">
+                  {delivery.notes}
+                </p>
               </div>
             )}
             {delivery.sourceType === "supply" && delivery.supplyRequestId && (
@@ -1268,21 +1559,40 @@ function DeliveryCard({
               </Button>
             )}
             {delivery.status === "in_progress" && (
-              <Button onClick={onComplete} size="sm" variant="outline" className="gap-1">
+              <Button
+                onClick={onComplete}
+                size="sm"
+                variant="outline"
+                className="gap-1"
+              >
                 <CheckCircle className="h-4 w-4" />
                 Mark Completed
               </Button>
             )}
-            <Button onClick={onAddTasks} size="sm" variant="outline" className="gap-1">
+            <Button
+              onClick={onAddTasks}
+              size="sm"
+              variant="outline"
+              className="gap-1"
+            >
               <ClipboardList className="h-4 w-4" />
               Tasks
             </Button>
-            <Button onClick={onEditNotes} size="sm" variant="outline" className="gap-1">
+            <Button
+              onClick={onEditNotes}
+              size="sm"
+              variant="outline"
+              className="gap-1"
+            >
               <FileText className="h-4 w-4" />
               Notes
             </Button>
             <div className="flex items-center space-x-2 mt-1">
-              <Switch id={`critical-${delivery.id}`} checked={delivery.isCritical} onCheckedChange={onToggleCritical} />
+              <Switch
+                id={`critical-${delivery.id}`}
+                checked={delivery.isCritical}
+                onCheckedChange={onToggleCritical}
+              />
               <Label htmlFor={`critical-${delivery.id}`} className="text-xs">
                 Critical
               </Label>
@@ -1291,7 +1601,7 @@ function DeliveryCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Empty state component
@@ -1300,7 +1610,9 @@ function EmptyState({ message }: { message: string }) {
     <div className="flex flex-col items-center justify-center py-10 text-center border rounded-lg">
       <Truck className="h-12 w-12 text-muted-foreground mb-4" />
       <h3 className="text-lg font-medium">{message}</h3>
-      <p className="text-sm text-muted-foreground mt-2">Create new deliveries or check back later.</p>
+      <p className="text-sm text-muted-foreground mt-2">
+        Create new deliveries or check back later.
+      </p>
     </div>
-  )
+  );
 }

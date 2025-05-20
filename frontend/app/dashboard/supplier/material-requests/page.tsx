@@ -44,8 +44,25 @@ import { format } from "date-fns";
 import { CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Type definition for material requests
+interface MaterialRequest {
+  id: string;
+  title: string;
+  description: string;
+  requestedBy: string;
+  requestDate: string;
+  status: "pending" | "accepted" | "rejected";
+  urgency: "high" | "medium" | "low";
+  quantity: number;
+  unit: string;
+  materialType: string;
+  notes: string;
+  estimatedDelivery?: string;
+  responseNotes?: string;
+}
+
 // Mock data for material requests
-const mockMaterialRequests = [
+const mockMaterialRequests: MaterialRequest[] = [
   {
     id: "MR-001",
     title: "Raw Milk Supply",
@@ -106,24 +123,49 @@ const mockMaterialRequests = [
 export default function MaterialRequestsPage() {
   const [materialRequests, setMaterialRequests] =
     useState(mockMaterialRequests);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<MaterialRequest | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [responseType, setResponseType] = useState("");
-  const [estimatedDelivery, setEstimatedDelivery] = useState(null);
+  const [estimatedDelivery, setEstimatedDelivery] = useState<Date | undefined>(
+    undefined
+  );
   const [responseNotes, setResponseNotes] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [urgencyFilter, setUrgencyFilter] = useState("all");
 
-  const handleViewRequest = (request) => {
+  interface MaterialRequest {
+    id: string;
+    title: string;
+    description: string;
+    requestedBy: string;
+    requestDate: string;
+    status: "pending" | "accepted" | "rejected";
+    urgency: "high" | "medium" | "low";
+    quantity: number;
+    unit: string;
+    materialType: string;
+    notes: string;
+    estimatedDelivery?: string;
+    responseNotes?: string;
+  }
+
+  type ResponseType = "" | "accept" | "reject";
+
+  const handleViewRequest = (request: MaterialRequest) => {
     setSelectedRequest(request);
     setIsDialogOpen(true);
     setResponseType("");
-    setEstimatedDelivery(null);
+    setEstimatedDelivery(undefined);
     setResponseNotes("");
   };
 
   const handleResponse = () => {
     if (responseType === "accept" && !estimatedDelivery) {
+      return;
+    }
+
+    if (!selectedRequest) {
       return;
     }
 
@@ -136,7 +178,7 @@ export default function MaterialRequestsPage() {
             ? format(estimatedDelivery, "yyyy-MM-dd")
             : undefined,
           responseNotes,
-        };
+        } as MaterialRequest;
       }
       return req;
     });
@@ -152,7 +194,11 @@ export default function MaterialRequestsPage() {
     return matchesStatus && matchesUrgency;
   });
 
-  const getStatusBadge = (status) => {
+  interface StatusBadgeProps {
+    status: "pending" | "accepted" | "rejected" | string;
+  }
+
+  const getStatusBadge = (status: StatusBadgeProps["status"]): JSX.Element => {
     switch (status) {
       case "pending":
         return (
@@ -186,7 +232,13 @@ export default function MaterialRequestsPage() {
     }
   };
 
-  const getUrgencyBadge = (urgency) => {
+  interface UrgencyBadgeProps {
+    urgency: "high" | "medium" | "low" | string;
+  }
+
+  const getUrgencyBadge = (
+    urgency: UrgencyBadgeProps["urgency"]
+  ): JSX.Element => {
     switch (urgency) {
       case "high":
         return <Badge className="bg-red-500">High</Badge>;
