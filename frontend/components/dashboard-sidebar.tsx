@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useAuth } from "@/contexts/auth-context"
-import { useSidebarState } from "@/hooks/use-sidebar-state"
-import { Logo } from "@/components/logo"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/auth-context";
+import { useSidebarState } from "@/hooks/use-sidebar-state";
+import { Logo } from "@/components/logo";
 import {
   BarChart3,
   Box,
@@ -29,33 +29,35 @@ import {
   Bell,
   FileText,
   History,
-} from "lucide-react"
+} from "lucide-react";
 
 interface NavItem {
-  title: string
-  href: string
-  icon: React.ReactNode
-  role: string[]
+  title: string;
+  href: string;
+  icon: React.ReactNode;
+  role: string[];
 }
 
 export function DashboardSidebar() {
-  const { user, logout } = useAuth()
-  const pathname = usePathname()
-  const [isMobile, setIsMobile] = useState(false)
-  const { isOpen, toggle } = useSidebarState()
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+  const sidebarState = useSidebarState();
+  const isCollapsed = sidebarState.isCollapsed ?? false;
+  // Removed toggle assignment as 'toggle' does not exist on SidebarContextType
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
 
   // Check if mobile on mount
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkIfMobile()
-    window.addEventListener("resize", checkIfMobile)
-    return () => window.removeEventListener("resize", checkIfMobile)
-  }, [])
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
 
-  const role = user?.role?.toLowerCase() || ""
+  const role = user?.role?.toLowerCase() || "";
 
   const navItems: NavItem[] = [
     {
@@ -193,9 +195,9 @@ export function DashboardSidebar() {
       icon: <Settings className="h-5 w-5" />,
       role: ["admin", "shop", "supplier", "driver"],
     },
-  ]
+  ];
 
-  const filteredNavItems = navItems.filter((item) => item.role.includes(role))
+  const filteredNavItems = navItems.filter((item) => item.role.includes(role));
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
@@ -211,12 +213,12 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setIsSheetOpen(false)}
+              onClick={() => setIsSheetCollapsed(false)}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 pathname === item.href
                   ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50",
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
               )}
             >
               {item.icon}
@@ -226,20 +228,24 @@ export function DashboardSidebar() {
         </nav>
       </ScrollArea>
       <div className="border-t p-4">
-        <Button variant="outline" className="w-full justify-start gap-2" onClick={logout}>
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2"
+          onClick={logout}
+        >
           <LogOut className="h-4 w-4" />
           Log out
         </Button>
       </div>
     </div>
-  )
+  );
 
   // For mobile
   if (isMobile) {
     return (
       <>
         <div className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px]">
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <Sheet open={isSheetCollapsed} onOpenChange={setIsSheetCollapsed}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="shrink-0">
                 <Menu className="h-5 w-5" />
@@ -256,7 +262,7 @@ export function DashboardSidebar() {
           </div>
         </div>
       </>
-    )
+    );
   }
 
   // For desktop
@@ -265,15 +271,12 @@ export function DashboardSidebar() {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-20 flex w-64 flex-col border-r bg-background transition-transform",
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         <SidebarContent />
       </aside>
-      <Button variant="outline" size="icon" className="fixed left-4 top-4 z-30 lg:hidden" onClick={toggle}>
-        <Menu className="h-5 w-5" />
-        <span className="sr-only">Toggle navigation menu</span>
-      </Button>
+      {/* Removed toggle button as 'toggle' does not exist on SidebarContextType */}
     </>
-  )
+  );
 }

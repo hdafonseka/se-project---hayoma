@@ -1,13 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
-import { Clock, MapPin, Package, Search, User, Truck, AlertCircle, CheckCircle2 } from "lucide-react"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Clock,
+  MapPin,
+  Package,
+  Search,
+  User,
+  Truck,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +35,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
+
+interface DeliveryItem {
+  name: string;
+  quantity: string;
+}
+
+interface Delivery {
+  id: string;
+  type: "pickup" | "delivery";
+  status: "scheduled" | "in_transit" | "completed" | string;
+  date: string;
+  time: string;
+  location: string;
+  driver: string;
+  items: DeliveryItem[];
+  notes?: string;
+  contactPhone: string;
+  vehicleDetails: string;
+  estimatedArrival: string;
+  loadingDock: string;
+  specialInstructions?: string;
+  completionNotes?: string;
+  signedBy?: string;
+}
 
 // Mock data for deliveries
-const mockDeliveries = [
+const mockDeliveries: Delivery[] = [
   {
     id: "del1",
     type: "pickup",
@@ -137,86 +181,129 @@ const mockDeliveries = [
     loadingDock: "Dock #4",
     specialInstructions: "Keep products upright during transport",
   },
-]
+];
 
 export default function SupplierDeliveriesPage() {
-  const [activeTab, setActiveTab] = useState("upcoming")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedDelivery, setSelectedDelivery] = useState(null)
-  const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("upcoming");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(
+    null
+  );
+  const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
 
   // Filter deliveries based on active tab, search term, and filters
   const filteredDeliveries = mockDeliveries.filter((delivery) => {
     // Filter by tab
-    if (activeTab === "upcoming" && delivery.status !== "scheduled") return false
-    if (activeTab === "in-transit" && delivery.status !== "in_transit") return false
-    if (activeTab === "completed" && delivery.status !== "completed") return false
+    if (activeTab === "upcoming" && delivery.status !== "scheduled")
+      return false;
+    if (activeTab === "in-transit" && delivery.status !== "in_transit")
+      return false;
+    if (activeTab === "completed" && delivery.status !== "completed")
+      return false;
 
     // Filter by search term
     const matchesSearch =
       delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       delivery.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       delivery.driver.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.items.some((item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      delivery.items.some((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
     // Filter by type and status
-    const matchesType = typeFilter === "all" || delivery.type === typeFilter
-    const matchesStatus = statusFilter === "all" || delivery.status === statusFilter
+    const matchesType = typeFilter === "all" || delivery.type === typeFilter;
+    const matchesStatus =
+      statusFilter === "all" || delivery.status === statusFilter;
 
-    return matchesSearch && matchesType && matchesStatus
-  })
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
   // Count deliveries by status
-  const scheduledDeliveries = mockDeliveries.filter((del) => del.status === "scheduled").length
-  const inTransitDeliveries = mockDeliveries.filter((del) => del.status === "in_transit").length
-  const completedDeliveries = mockDeliveries.filter((del) => del.status === "completed").length
+  const scheduledDeliveries = mockDeliveries.filter(
+    (del) => del.status === "scheduled"
+  ).length;
+  const inTransitDeliveries = mockDeliveries.filter(
+    (del) => del.status === "in_transit"
+  ).length;
+  const completedDeliveries = mockDeliveries.filter(
+    (del) => del.status === "completed"
+  ).length;
 
   // Get status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "scheduled":
-        return <Badge className="bg-blue-500">Scheduled</Badge>
+        return <Badge className="bg-blue-500">Scheduled</Badge>;
       case "in_transit":
-        return <Badge className="bg-amber-500">In Transit</Badge>
+        return <Badge className="bg-amber-500">In Transit</Badge>;
       case "completed":
-        return <Badge className="bg-green-500">Completed</Badge>
+        return <Badge className="bg-green-500">Completed</Badge>;
       default:
-        return <Badge>{status}</Badge>
+        return <Badge>{status}</Badge>;
     }
-  }
+  };
 
   // Get type badge
   const getTypeBadge = (type: string) => {
     switch (type) {
       case "pickup":
         return (
-          <Badge variant="outline" className="border-purple-500 text-purple-500">
+          <Badge
+            variant="outline"
+            className="border-purple-500 text-purple-500"
+          >
             Pickup
           </Badge>
-        )
+        );
       case "delivery":
         return (
           <Badge variant="outline" className="border-teal-500 text-teal-500">
             Delivery
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="outline">{type}</Badge>
+        return <Badge variant="outline">{type}</Badge>;
     }
+  };
+
+  interface DeliveryItem {
+    name: string;
+    quantity: string;
   }
 
-  const viewDeliveryDetails = (delivery) => {
-    setSelectedDelivery(delivery)
-    setIsViewDetailsOpen(true)
+  interface Delivery {
+    id: string;
+    type: "pickup" | "delivery";
+    status: "scheduled" | "in_transit" | "completed" | string;
+    date: string;
+    time: string;
+    location: string;
+    driver: string;
+    items: DeliveryItem[];
+    notes?: string;
+    contactPhone: string;
+    vehicleDetails: string;
+    estimatedArrival: string;
+    loadingDock: string;
+    specialInstructions?: string;
+    completionNotes?: string;
+    signedBy?: string;
   }
+
+  const viewDeliveryDetails = (delivery: Delivery) => {
+    setSelectedDelivery(delivery);
+    setIsViewDetailsOpen(true);
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Deliveries & Pickups</h1>
-        <p className="text-muted-foreground">Manage your scheduled pickups and deliveries</p>
+        <p className="text-muted-foreground">
+          Manage your scheduled pickups and deliveries
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -225,8 +312,12 @@ export default function SupplierDeliveriesPage() {
             <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{scheduledDeliveries}</div>
-            <p className="text-xs text-muted-foreground">Upcoming pickups and deliveries</p>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {scheduledDeliveries}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Upcoming pickups and deliveries
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-amber-50 dark:bg-amber-950 border-amber-100 dark:border-amber-900">
@@ -234,8 +325,12 @@ export default function SupplierDeliveriesPage() {
             <CardTitle className="text-sm font-medium">In Transit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{inTransitDeliveries}</div>
-            <p className="text-xs text-muted-foreground">Currently in progress</p>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+              {inTransitDeliveries}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Currently in progress
+            </p>
           </CardContent>
         </Card>
         <Card className="bg-green-50 dark:bg-green-950 border-green-100 dark:border-green-900">
@@ -243,13 +338,21 @@ export default function SupplierDeliveriesPage() {
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{completedDeliveries}</div>
-            <p className="text-xs text-muted-foreground">Successfully completed</p>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {completedDeliveries}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Successfully completed
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs
+        defaultValue="upcoming"
+        value={activeTab}
+        onValueChange={setActiveTab}
+      >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <TabsList>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -305,7 +408,9 @@ export default function SupplierDeliveriesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
-                          {delivery.type === "pickup" ? "Pickup #" : "Delivery #"}
+                          {delivery.type === "pickup"
+                            ? "Pickup #"
+                            : "Delivery #"}
                           {delivery.id.substring(3)}
                         </CardTitle>
                         <CardDescription>{delivery.date}</CardDescription>
@@ -322,21 +427,27 @@ export default function SupplierDeliveriesPage() {
                         <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Time Window</p>
-                          <p className="text-sm text-muted-foreground">{delivery.time}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.time}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Location</p>
-                          <p className="text-sm text-muted-foreground">{delivery.location}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.location}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Driver</p>
-                          <p className="text-sm text-muted-foreground">{delivery.driver}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.driver}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -355,7 +466,11 @@ export default function SupplierDeliveriesPage() {
                     </div>
                   </CardContent>
                   <div className="px-6 pb-4">
-                    <Button variant="outline" className="w-full" onClick={() => viewDeliveryDetails(delivery)}>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => viewDeliveryDetails(delivery)}
+                    >
                       View Details
                     </Button>
                   </div>
@@ -378,7 +493,9 @@ export default function SupplierDeliveriesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
-                          {delivery.type === "pickup" ? "Pickup #" : "Delivery #"}
+                          {delivery.type === "pickup"
+                            ? "Pickup #"
+                            : "Delivery #"}
                           {delivery.id.substring(3)}
                         </CardTitle>
                         <CardDescription>{delivery.date}</CardDescription>
@@ -395,21 +512,27 @@ export default function SupplierDeliveriesPage() {
                         <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Time Window</p>
-                          <p className="text-sm text-muted-foreground">{delivery.time}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.time}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Location</p>
-                          <p className="text-sm text-muted-foreground">{delivery.location}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.location}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Driver</p>
-                          <p className="text-sm text-muted-foreground">{delivery.driver}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.driver}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -428,7 +551,11 @@ export default function SupplierDeliveriesPage() {
                     </div>
                   </CardContent>
                   <div className="px-6 pb-4 flex gap-2">
-                    <Button variant="outline" className="w-full" onClick={() => viewDeliveryDetails(delivery)}>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => viewDeliveryDetails(delivery)}
+                    >
                       View Details
                     </Button>
                     <Button className="w-full">Track</Button>
@@ -452,7 +579,9 @@ export default function SupplierDeliveriesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">
-                          {delivery.type === "pickup" ? "Pickup #" : "Delivery #"}
+                          {delivery.type === "pickup"
+                            ? "Pickup #"
+                            : "Delivery #"}
                           {delivery.id.substring(3)}
                         </CardTitle>
                         <CardDescription>{delivery.date}</CardDescription>
@@ -469,21 +598,27 @@ export default function SupplierDeliveriesPage() {
                         <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Time Window</p>
-                          <p className="text-sm text-muted-foreground">{delivery.time}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.time}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Location</p>
-                          <p className="text-sm text-muted-foreground">{delivery.location}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.location}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
                         <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                         <div>
                           <p className="text-sm font-medium">Driver</p>
-                          <p className="text-sm text-muted-foreground">{delivery.driver}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {delivery.driver}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -502,7 +637,11 @@ export default function SupplierDeliveriesPage() {
                     </div>
                   </CardContent>
                   <div className="px-6 pb-4 flex gap-2">
-                    <Button variant="outline" className="w-full" onClick={() => viewDeliveryDetails(delivery)}>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => viewDeliveryDetails(delivery)}
+                    >
                       View Details
                     </Button>
                     <Button variant="outline" className="w-full">
@@ -528,10 +667,14 @@ export default function SupplierDeliveriesPage() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Truck className="h-5 w-5" />
-                  {selectedDelivery.type === "pickup" ? "Pickup" : "Delivery"} Details
+                  {selectedDelivery.type === "pickup"
+                    ? "Pickup"
+                    : "Delivery"}{" "}
+                  Details
                 </DialogTitle>
                 <DialogDescription>
-                  {selectedDelivery.type === "pickup" ? "Pickup" : "Delivery"} #{selectedDelivery.id} information
+                  {selectedDelivery.type === "pickup" ? "Pickup" : "Delivery"} #
+                  {selectedDelivery.id} information
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -541,19 +684,27 @@ export default function SupplierDeliveriesPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Date</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Date
+                    </h3>
                     <p>{selectedDelivery.date}</p>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Time Window</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Time Window
+                    </h3>
                     <p>{selectedDelivery.time}</p>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Location</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Location
+                    </h3>
                     <p>{selectedDelivery.location}</p>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">Loading Dock</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Loading Dock
+                    </h3>
                     <p>{selectedDelivery.loadingDock}</p>
                   </div>
                 </div>
@@ -562,19 +713,27 @@ export default function SupplierDeliveriesPage() {
                   <h3 className="font-medium mb-2">Transport Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Driver</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Driver
+                      </h3>
                       <p>{selectedDelivery.driver}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Contact</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Contact
+                      </h3>
                       <p>{selectedDelivery.contactPhone}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Vehicle</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Vehicle
+                      </h3>
                       <p>{selectedDelivery.vehicleDetails}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Estimated Arrival</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground">
+                        Estimated Arrival
+                      </h3>
                       <p>{selectedDelivery.estimatedArrival}</p>
                     </div>
                   </div>
@@ -586,7 +745,9 @@ export default function SupplierDeliveriesPage() {
                     {selectedDelivery.items.map((item, index) => (
                       <li key={index} className="flex justify-between">
                         <span>{item.name}</span>
-                        <span className="text-muted-foreground">{item.quantity}</span>
+                        <span className="text-muted-foreground">
+                          {item.quantity}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -608,24 +769,32 @@ export default function SupplierDeliveriesPage() {
                       <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                       <h3 className="font-medium">Special Instructions</h3>
                     </div>
-                    <p className="text-sm">{selectedDelivery.specialInstructions}</p>
+                    <p className="text-sm">
+                      {selectedDelivery.specialInstructions}
+                    </p>
                   </div>
                 )}
 
-                {selectedDelivery.status === "completed" && selectedDelivery.completionNotes && (
-                  <div className="rounded-md border p-3 bg-green-50 dark:bg-green-950 border-green-100 dark:border-green-900">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      <h3 className="font-medium">Completion Notes</h3>
-                    </div>
-                    <p className="text-sm">{selectedDelivery.completionNotes}</p>
-                    {selectedDelivery.signedBy && (
-                      <p className="text-sm mt-1">
-                        Signed by: <span className="font-medium">{selectedDelivery.signedBy}</span>
+                {selectedDelivery.status === "completed" &&
+                  selectedDelivery.completionNotes && (
+                    <div className="rounded-md border p-3 bg-green-50 dark:bg-green-950 border-green-100 dark:border-green-900">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <h3 className="font-medium">Completion Notes</h3>
+                      </div>
+                      <p className="text-sm">
+                        {selectedDelivery.completionNotes}
                       </p>
-                    )}
-                  </div>
-                )}
+                      {selectedDelivery.signedBy && (
+                        <p className="text-sm mt-1">
+                          Signed by:{" "}
+                          <span className="font-medium">
+                            {selectedDelivery.signedBy}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  )}
               </div>
               <DialogFooter className="flex gap-2">
                 {selectedDelivery.status === "scheduled" && (
@@ -634,9 +803,16 @@ export default function SupplierDeliveriesPage() {
                     <Button>Confirm Ready</Button>
                   </>
                 )}
-                {selectedDelivery.status === "in_transit" && <Button>Track Location</Button>}
-                {selectedDelivery.status === "completed" && <Button variant="outline">Download Receipt</Button>}
-                <Button variant="outline" onClick={() => setIsViewDetailsOpen(false)}>
+                {selectedDelivery.status === "in_transit" && (
+                  <Button>Track Location</Button>
+                )}
+                {selectedDelivery.status === "completed" && (
+                  <Button variant="outline">Download Receipt</Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setIsViewDetailsOpen(false)}
+                >
                   Close
                 </Button>
               </DialogFooter>
@@ -645,5 +821,5 @@ export default function SupplierDeliveriesPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

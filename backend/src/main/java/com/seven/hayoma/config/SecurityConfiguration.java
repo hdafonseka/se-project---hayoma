@@ -39,7 +39,8 @@ public class SecurityConfiguration {
                             return config;
                         }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(STATELESS))
